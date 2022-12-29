@@ -20,6 +20,7 @@ func initService() {
 	// 创建ffmpeg输出图片和音频的文件夹防止ffmpeg生成时候报错
 	os.MkdirAll(resource.OutputAudioPath[:strings.LastIndex(resource.OutputAudioPath, "/")], os.ModePerm)
 	os.MkdirAll(resource.OutputImgPath[:strings.LastIndex(resource.OutputImgPath, "/")], os.ModePerm)
+	os.MkdirAll(resource.OutputVideoPath[:strings.LastIndex(resource.OutputVideoPath, "/")], os.ModePerm)
 	InitLogger()
 }
 
@@ -44,11 +45,10 @@ func initUI() {
 	Gauges = make([]*widgets.Gauge, 3)
 	for i := range Gauges {
 		Gauges[i] = widgets.NewGauge()
-		Gauges[i].Percent = i * 10
+		Gauges[i].Percent = 0
 		Gauges[i].BarColor = ui.ColorRed
 	}
 	Gauges[0].BarColor = ui.ColorBlue
-
 	// list列表
 	List = widgets.NewList()
 	List.Rows = []string{
@@ -97,10 +97,11 @@ func RefreshGrid() {
 		),
 		ui.NewRow(videoHeightRate, CurTabView),
 		ui.NewRow(1.0/20, Gauges[0]),
+		// ui.NewRow(1.0/20, Gauges[1]),
 		ui.NewRow(8.0/10-videoHeightRate-1.0/20,
 			ui.NewCol(1.0/2,
-				ui.NewRow(.9/3, List),
 				ui.NewRow(.9/3, Gauges[1]),
+				ui.NewRow(.9/3, List),
 				ui.NewRow(1.2/3, Gauges[2]),
 			),
 			ui.NewCol(1.0/2,

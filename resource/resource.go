@@ -8,6 +8,7 @@ var (
 var (
 	OutputImgPath   = "./output/img/img%04d.png"
 	OutputAudioPath = "./output/audio/audio.mp3"
+	OutputVideoPath = "./output/video/video.mp4"
 	BaseLogPath     = "./output/app.log"
 	BaseVideoUrl    = "./resource/happy.mp4"
 	// BaseVideoUrl = "https://404name.oss-cn-shanghai.aliyuncs.com/lightcloud/2022/3/20/3724723_da3-1-16.mp4"

@@ -12,8 +12,7 @@ import (
 	"time"
 
 	"github.com/404name/termui-demo/global"
-	"github.com/404name/termui-demo/model"
-	"github.com/404name/termui-demo/widget"
+	"github.com/404name/termui-demo/model/video"
 	ui "github.com/gizak/termui/v3"
 )
 
@@ -25,14 +24,14 @@ func main() {
 	//初始化系统服务和UI布局
 	global.Init()
 	// 初始化模型
-	model.Init()
-	widget.Init()
+	video.Init()
+
 	defer global.Log.Sync()
 
 	// 开始渲染
 	ui.Clear()
 	ui.Render(global.Grid)
-	tickerCount := 1
+
 	uiEvents := ui.PollEvents()
 	ticker := time.NewTicker(time.Second).C
 	for {
@@ -44,8 +43,11 @@ func main() {
 			case "q", "<C-c>":
 				return
 			case "<Space>", "Enter":
-				var playControl interface{}
-				model.Video.PlayChan <- playControl
+				if video.Player.Ready {
+					var playControl interface{}
+					video.Player.PlayChan <- playControl
+				}
+
 			case "<Left>":
 				global.Tab.FocusLeft()
 				global.RefreshGrid()
@@ -61,23 +63,19 @@ func main() {
 				ui.Render(global.Grid)
 			}
 		case <-ticker:
-			if tickerCount == 1000 {
-				return
-			}
-			// global.Log.Debugln(model.Video)
-			for _, g := range global.Gauges {
-				g.Percent = (g.Percent + 3) % 100
-			}
-			global.Gauges[0].Percent = model.Video.CurrentPos * 100 / model.Video.Duration
-			global.Gauges[0].Title = model.Video.GetProgressTitle()
-			// global.SparklineGroup.Sparklines[0].Data = utils.SinFloat64[tickerCount : tickerCount+100]
-			// global.Plot.Data[0] = utils.SinFloat64[2*tickerCount:]
-			ui.Render(global.Gauges[0])
-			ui.Render(global.Gauges[1])
+
+			// if tickerCount == 1000 {
+			// 	return
+			// }
+
+			global.Gauges[2].Percent = (global.Gauges[2].Percent + 3) % 100
+
+			// // global.SparklineGroup.Sparklines[0].Data = utils.SinFloat64[tickerCount : tickerCount+100]
+			// // global.Plot.Data[0] = utils.SinFloat64[2*tickerCount:]
 			ui.Render(global.Gauges[2])
-			// ui.Render(global.SparklineGroup)
-			// ui.Render(global.Plot)
-			tickerCount++
+			// // ui.Render(global.SparklineGroup)
+			// // ui.Render(global.Plot)
+			// tickerCount++
 		}
 	}
 }

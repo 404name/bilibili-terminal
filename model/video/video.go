@@ -1,4 +1,4 @@
-package model
+package video
 
 import (
 	"fmt"
@@ -17,7 +17,19 @@ const (
 	VideoFrameRate       = 12 // 视频帧率
 )
 
+var (
+	Player *VideoDetail
+)
+
+func Init() {
+	Player = &VideoDetail{}
+	Player.Init()
+}
+
 type VideoDetail struct {
+	bilibiliCid // bilicard
+
+	Ready      bool             // 是否加载完成
 	URL        string           // 视频URL
 	Duration   int              // 视频时长
 	CurrentPos int              // 当前看到多少秒
@@ -31,16 +43,26 @@ type VideoDetail struct {
 
 func (v *VideoDetail) Init() error {
 	if v.URL == "" {
-		v.URL = resource.BaseVideoUrl
+		v.URL = resource.OutputVideoPath
 	}
+	v.Ready = false
 	v.CurrentPos = 60
 	v.PreLoadPos = v.CurrentPos
 	v.FrameCache = make(chan image.Image, VideoPreLoadGap*VideoFrameRate)
 	v.AudioCache = make(chan oto.Player, 1)
 	v.PlayChan = make(chan interface{}, 1)
-	v.Duration = ffmpeg.GetVideoDuration(v.URL)
+
 	v.FrameLeft = VideoFrameRate
-	go v.Load(false)
+
+	// 加载视频
+	videos := getCidList(bvid, qn)
+	v.bilibiliCid = videos[0]
+	// 暂时只读取第一个视频
+	v.bilibiliCid.PlayURLs = v.bilibiliCid.PlayURLs[:1]
+
+	// 下面二选一，第一个是下载
+	go v.bilibiliCid.download(resource.OutputVideoPath)
+	//go v.Load(false)
 	return nil
 }
 func (v *VideoDetail) Clear() error {
@@ -69,7 +91,15 @@ func (v *VideoDetail) GetProgressTitle() string {
 func (v *VideoDetail) Load(preload bool) {
 
 	// 第一次不预加载
-	if preload {
+	if !preload {
+		v.Ready = true
+		// 加载时长
+		v.Duration = ffmpeg.GetVideoDuration(v.URL)
+		// 渲染进度条
+		VideoProgressBarRender(v)
+		// 渲染视频等待激活
+		go VideoRender(v)
+	} else {
 		v.PreLoadPos += VideoPreLoadGap
 	}
 	if v.PreLoadPos > v.Duration {
