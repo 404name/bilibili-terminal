@@ -12,5 +12,5 @@ func init() {
 }
 
 func TestGetIpcScreenShot(t *testing.T) {
-	GetIpcScreenShot("ffmpeg", "."+resource.BaseVideoUrl, "."+resource.BaseImg, 6, 10, 1)
+	GetIpcScreenShot("ffmpeg", "."+resource.BaseVideoUrl, "."+resource.OutputImgPath, "."+resource.OutputAudioPath, 6, 10, 1)
 }

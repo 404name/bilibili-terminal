@@ -35,7 +35,7 @@ func (v *VideoDetail) Init() error {
 	v.PlayChan = make(chan interface{}, 1)
 	v.Duration = ffmpeg.GetVideoDuration(v.URL)
 	v.FrameLeft = VideoFrameRate
-	v.GetImgWithPreload(false)
+	go v.GetImgWithPreload(false)
 	return nil
 }
 func (v *VideoDetail) Clear() error {
@@ -60,21 +60,21 @@ func (v *VideoDetail) GetImgWithPreload(preload bool) {
 		v.PreLoadPos = v.Duration
 	}
 
-	gap := VideoPreLoadGap
-	if v.PreLoadPos+gap > v.Duration {
-		gap = v.Duration - v.PreLoadPos
+	toPos := v.PreLoadPos + VideoPreLoadGap
+	if toPos > v.Duration {
+		toPos = v.Duration
 	}
 
 	// 比如5秒加载一次,当前是第3秒,并且规定提前两秒去加载
-	if err := ffmpeg.GetIpcScreenShot("ffmpeg", v.URL, resource.BaseImg, v.PreLoadPos, VideoFrameRate, gap); err != nil {
+	if err := ffmpeg.GetIpcScreenShot("ffmpeg", v.URL, resource.OutputImgPath, resource.OutputAudioPath, v.PreLoadPos, VideoFrameRate, toPos); err != nil {
 		global.Log.Errorln("请求异常====>", err)
 		return
 	}
 
 	// decode图片
-	for i := 1; i <= VideoFrameRate*gap; i++ {
-		v.FrameChan <- utils.LoadImg(fmt.Sprintf(resource.BaseImg, i))
+	for i := 1; i <= VideoFrameRate*(toPos+v.PreLoadPos); i++ {
+		v.FrameChan <- utils.LoadImg(fmt.Sprintf(resource.OutputImgPath, i))
 		global.Log.Infoln("请求中:缓存池还剩下====>", len(v.FrameChan))
 	}
-	global.Log.Infoln("获取%d-%ds内共%d张图片", v.PreLoadPos, v.PreLoadPos+gap, VideoFrameRate*gap)
+	global.Log.Infoln("获取%d-%ds内共%d张图片", v.PreLoadPos, toPos, VideoFrameRate*(toPos+v.PreLoadPos))
 }

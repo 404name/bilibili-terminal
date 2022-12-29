@@ -7,5 +7,5 @@ import (
 )
 
 func TestLoadImg(t *testing.T) {
-	println(LoadImg("." + resource.BaseImg))
+	println(LoadImg("." + resource.OutputImgPath))
 }

@@ -14,8 +14,9 @@ import (
 // }
 
 // 根据URL调用ffmpeg 获取截图
-func GetIpcScreenShot(ffmpegPath string, url string, screenShotPath string, time int, frameRate int, perLoad int) error {
-	// ffmpeg -timeout 10000000 -y -r 10 -i https://404name.oss-cn-shanghai.aliyuncs.com/lightcloud/2022/3/20/3724723_da3-1-16.mp4 -ss 00:00:01 -vframes 1 -f image2 -vcodec png ./ffmpeg/images/img-%02d.png
+func GetIpcScreenShot(ffmpegPath string, url string, screenShotPath string, audioPath string, time int, frameRate int, toPos int) error {
+	//ffmpeg -timeout 10000000 -i https://404name.oss-cn-shanghai.aliyuncs.com/lightcloud/2022/3/20/3724723_da3-1-16.mp4 -ss 0 -to 60 -r 12 -f  image2 -vcodec png ./resource/output/img%04d.png -vsync vfr -y -vn -ss 0 -to 60 -acodec libmp3lame -ar 16000 output.mp3
+	// 抽帧同时输出音频
 	var params []string
 
 	if url[:4] == "http" {
@@ -30,8 +31,8 @@ func GetIpcScreenShot(ffmpegPath string, url string, screenShotPath string, time
 	// params = append(params, "-r")
 	params = append(params, "-ss")
 	params = append(params, fmt.Sprint(time))
-	params = append(params, "-t")
-	params = append(params, fmt.Sprint(perLoad))
+	params = append(params, "-to")
+	params = append(params, fmt.Sprint(toPos))
 	params = append(params, "-r")
 	params = append(params, fmt.Sprint(frameRate))
 	// params = append(params, fmt.Sprint("select=between(t\\,%d\\,%d),fps=%d", time, time+1, frameRate))
@@ -40,6 +41,20 @@ func GetIpcScreenShot(ffmpegPath string, url string, screenShotPath string, time
 	params = append(params, "-vcodec")
 	params = append(params, "png")
 	params = append(params, screenShotPath)
+	params = append(params, "-vsync")
+	params = append(params, "vfr")
+	params = append(params, "-y")
+	params = append(params, "-vn")
+	params = append(params, "-ss")
+	params = append(params, fmt.Sprint(time))
+	params = append(params, "-to")
+	params = append(params, fmt.Sprint(toPos))
+
+	params = append(params, "-acodec")
+	params = append(params, "libmp3lame")
+	params = append(params, "-ar")
+	params = append(params, "16000")
+	params = append(params, audioPath)
 
 	_, err := CallCommandRun(ffmpegPath, params)
 	if err != nil {

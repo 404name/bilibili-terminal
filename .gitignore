@@ -1,5 +1,7 @@
 main.exe
-resource/output/*
+go.sum
+/resource/output/*
+/resource/app.log
 *.test
 *.out
 *.com
@@ -11,4 +13,6 @@ resource/output/*
 *.log
 *.sqlite
 *.db
+*.mp3
+*.wav
 /test
