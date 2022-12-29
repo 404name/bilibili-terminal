@@ -1,6 +1,9 @@
 package global
 
 import (
+	"os"
+	"strings"
+
 	"github.com/404name/termui-demo/resource"
 	"github.com/404name/termui-demo/utils"
 	ui "github.com/gizak/termui/v3"
@@ -10,9 +13,13 @@ import (
 func Init() {
 	initService()
 	initUI()
+	RefreshGrid()
 }
 
 func initService() {
+	// 创建ffmpeg输出图片和音频的文件夹防止ffmpeg生成时候报错
+	os.MkdirAll(resource.OutputAudioPath[:strings.LastIndex(resource.OutputAudioPath, "/")], os.ModePerm)
+	os.MkdirAll(resource.OutputImgPath[:strings.LastIndex(resource.OutputImgPath, "/")], os.ModePerm)
 	InitLogger()
 }
 
@@ -68,6 +75,43 @@ func initUI() {
 	Tab = widgets.NewTabPane("index", "text", "moretext", "list")
 	Tab.Border = true
 	TabView = []interface{}{Img, Gauges[1], List, SparklineGroup}
+}
 
-	RefreshGrid()
+func RefreshGrid() {
+	Grid = ui.NewGrid()
+	termWidth, termHeight := ui.TerminalDimensions()
+
+	videoHeight := float64(termWidth * 4.0 / 16.0)
+	videoHeightRate := videoHeight / float64(termHeight)
+	Log.Infoln("系统窗口尺寸==>", termWidth, termWidth)
+	Log.Infoln("视频窗口尺寸|高比率==>", termWidth, videoHeight, videoHeightRate)
+	Grid.SetRect(0, 0, termWidth, termHeight)
+	// 后期切换界面
+	CurTabView = TabView[Tab.ActiveTabIndex]
+
+	Grid.Set(
+		ui.NewRow(1.0/10,
+			ui.NewCol(1.0/4, List),
+			ui.NewCol(2.0/4, Tab),
+			ui.NewCol(1.0/4, List),
+		),
+		ui.NewRow(videoHeightRate, CurTabView),
+		ui.NewRow(1.0/20, Gauges[0]),
+		ui.NewRow(8.0/10-videoHeightRate-1.0/20,
+			ui.NewCol(1.0/2,
+				ui.NewRow(.9/3, List),
+				ui.NewRow(.9/3, Gauges[1]),
+				ui.NewRow(1.2/3, Gauges[2]),
+			),
+			ui.NewCol(1.0/2,
+				ui.NewRow(1.0/2, SparklineGroup),
+				ui.NewRow(1.0/2, Plot),
+			),
+		),
+		ui.NewRow(1.0/10,
+			ui.NewCol(1.0/3, List),
+			ui.NewCol(1.0/3, List),
+			ui.NewCol(1.0/3, List),
+		),
+	)
 }

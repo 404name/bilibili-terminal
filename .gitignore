@@ -1,18 +1,12 @@
+# 文件夹
+/output/*
+/test
+
+# 文件
 main.exe
 go.sum
-/resource/output/*
-/resource/app.log
+
+# 其它文件
 *.test
-*.out
-*.com
-*.class
-*.dll
 *.exe
-*.o
-*.so
 *.log
-*.sqlite
-*.db
-*.mp3
-*.wav
-/test
