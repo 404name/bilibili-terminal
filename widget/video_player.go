@@ -55,6 +55,12 @@ func VideoRender(v *model.VideoDetail) {
 							v.FrameLeft = model.VideoFrameRate
 							// 当前秒结束
 							v.CurrentPos++
+
+							if v.CurrentPos == v.PreLoadPos {
+								// 此时应该更换音频
+								go v.RefreshAudio()
+							}
+
 							// 预先一秒去加载
 							if (v.CurrentPos+model.VideoPreLoadDuration)%model.VideoPreLoadGap == 0 {
 								// global.Log.Infoln("预加载====>", v.PreLoadPos+model.VideoPreLoadGap)
@@ -66,15 +72,6 @@ func VideoRender(v *model.VideoDetail) {
 						// global.Log.Infoln("当前秒剩余帧数====>", v.FrameLeft)
 
 						global.Img.Image = <-v.FrameCache
-						// 音频处理
-						if !v.Audio.IsPlaying() {
-							if err := v.Audio.Close(); err != nil {
-								global.Log.Errorln("音频释放失败====>", err)
-							}
-							// 这里同步
-							v.Audio = <-v.AudioCache
-							v.Audio.Play()
-						}
 						ui.Render(global.Img)
 
 						// global.Log.Infoln("没卡住刷新界面====>", v.FrameLeft)

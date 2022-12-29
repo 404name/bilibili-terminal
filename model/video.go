@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	VideoPreLoadDuration = 3  // 提前几秒开始缓存
-	VideoPreLoadGap      = 60 // 加载间隔/预加载秒数
+	VideoPreLoadDuration = 5  // 提前几秒开始缓存
+	VideoPreLoadGap      = 30 // 加载间隔/预加载秒数
 	VideoFrameRate       = 12 // 视频帧率
 )
 
@@ -33,7 +33,8 @@ func (v *VideoDetail) Init() error {
 	if v.URL == "" {
 		v.URL = resource.BaseVideoUrl
 	}
-	v.CurrentPos = 0
+	v.CurrentPos = 60
+	v.PreLoadPos = v.CurrentPos
 	v.FrameCache = make(chan image.Image, VideoPreLoadGap*VideoFrameRate)
 	v.AudioCache = make(chan oto.Player, 1)
 	v.PlayChan = make(chan interface{}, 1)
@@ -48,7 +49,18 @@ func (v *VideoDetail) Clear() error {
 	v.Load(false)
 	return nil
 }
-
+func (v *VideoDetail) RefreshAudio() {
+	// 音频处理
+	audio := <-v.AudioCache
+	//startT := time.Now() //计算当前时间
+	audio.Play()
+	//global.Log.Errorln("音频播放耗时====>", time.Since(startT))
+	if err := v.Audio.Close(); err != nil {
+		global.Log.Errorln("音频释放失败====>", err)
+	}
+	// 这里同步
+	v.Audio = audio
+}
 func (v *VideoDetail) GetProgressTitle() string {
 	return utils.VideoDurationFormat(v.CurrentPos, false) + " / " + utils.VideoDurationFormat(v.Duration, false)
 }
@@ -78,8 +90,9 @@ func (v *VideoDetail) Load(preload bool) {
 	// decode图片
 	for i := 1; i <= VideoFrameRate*(toPos-v.PreLoadPos); i++ {
 		v.FrameCache <- utils.LoadImg(fmt.Sprintf(resource.OutputImgPath, i))
-		global.Log.Infoln("请求中:缓存池还剩下====>", len(v.FrameCache))
+		//global.Log.Infoln("请求中:缓存池还剩下====>", len(v.FrameCache))
 	}
+
 	v.AudioCache <- utils.LoadAudio(resource.OutputAudioPath)
-	global.Log.Infoln("获取%d-%ds内共%d张图片及音频", v.PreLoadPos, toPos, VideoFrameRate*(toPos-v.PreLoadPos))
+	global.Log.Infof("获取%d-%ds内共%d张图片及音频", v.PreLoadPos, toPos, VideoFrameRate*(toPos-v.PreLoadPos))
 }

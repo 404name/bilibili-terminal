@@ -13,7 +13,6 @@ import (
 
 	"github.com/404name/termui-demo/global"
 	"github.com/404name/termui-demo/model"
-	"github.com/404name/termui-demo/utils"
 	"github.com/404name/termui-demo/widget"
 	ui "github.com/gizak/termui/v3"
 )
@@ -71,13 +70,13 @@ func main() {
 			}
 			global.Gauges[0].Percent = model.Video.CurrentPos * 100 / model.Video.Duration
 			global.Gauges[0].Title = model.Video.GetProgressTitle()
-			global.SparklineGroup.Sparklines[0].Data = utils.SinFloat64[tickerCount : tickerCount+100]
-			global.Plot.Data[0] = utils.SinFloat64[2*tickerCount:]
+			// global.SparklineGroup.Sparklines[0].Data = utils.SinFloat64[tickerCount : tickerCount+100]
+			// global.Plot.Data[0] = utils.SinFloat64[2*tickerCount:]
 			ui.Render(global.Gauges[0])
 			ui.Render(global.Gauges[1])
 			ui.Render(global.Gauges[2])
-			ui.Render(global.SparklineGroup)
-			ui.Render(global.Plot)
+			// ui.Render(global.SparklineGroup)
+			// ui.Render(global.Plot)
 			tickerCount++
 		}
 	}

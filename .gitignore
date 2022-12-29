@@ -10,3 +10,4 @@ go.sum
 *.test
 *.exe
 *.log
+*.mp4
