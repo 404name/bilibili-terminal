@@ -9,10 +9,14 @@ package main
 
 import (
 	"log"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/404name/termui-demo/global"
 	"github.com/404name/termui-demo/model/video"
+	"github.com/404name/termui-demo/resource"
+	"github.com/404name/termui-demo/utils"
 	ui "github.com/gizak/termui/v3"
 )
 
@@ -21,12 +25,12 @@ func main() {
 		log.Fatalf("failed to initialize termui: %v", err)
 	}
 	defer ui.Close()
-	//初始化系统服务和UI布局
-	global.Init()
-	// 初始化模型
-	video.Init()
 
-	defer global.Log.Sync()
+	Init()
+
+	// 初始化模型
+
+	defer utils.Log.Sync()
 
 	// 开始渲染
 	ui.Clear()
@@ -78,4 +82,29 @@ func main() {
 			// tickerCount++
 		}
 	}
+}
+
+// 这边后面要抽出来，main文件里面只有main
+func Init() {
+	// 先初始化日志和系统服务
+	initService()
+	global.InitUI()
+	global.RefreshGrid()
+	video.Init()
+}
+
+func initService() {
+	utils.InitLogger()
+	// 初始化系统及设置命令行UTF-8格式
+	initOS()
+}
+
+func initOS() {
+	// 创建ffmpeg输出图片和音频的文件夹防止ffmpeg生成时候报错
+	os.MkdirAll(resource.OutputAudioPath[:strings.LastIndex(resource.OutputAudioPath, "/")], os.ModePerm)
+	os.MkdirAll(resource.OutputImgPath[:strings.LastIndex(resource.OutputImgPath, "/")], os.ModePerm)
+	os.MkdirAll(resource.OutputVideoPath[:strings.LastIndex(resource.OutputVideoPath, "/")], os.ModePerm)
+
+	// 添加UTF-8来支持中文
+	utils.CallCommandRun("chcp", []string{"65001"})
 }

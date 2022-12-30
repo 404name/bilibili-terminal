@@ -1,6 +1,8 @@
 package utils
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // 将时间格式化为 00:01 / 03:03
 // hourFix为即使小时为0也会填充小时的前缀
@@ -14,3 +16,8 @@ func VideoDurationFormat(seconds int, hourFix bool) string {
 	}
 	return fmt.Sprintf("%02d:%02d:%02d", hour, minute, second)
 }
+
+// func ChineseStringFormat(str string) string {
+// 	r := regexp.MustCompile(`([\p{Han}])`)
+// 	return r.ReplaceAllString(str, "$1 ")
+// }

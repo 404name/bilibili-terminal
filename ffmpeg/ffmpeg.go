@@ -2,11 +2,10 @@ package ffmpeg
 
 import (
 	"fmt"
-	"os/exec"
 	"strconv"
 	"strings"
 
-	"github.com/404name/termui-demo/global"
+	"github.com/404name/termui-demo/utils"
 )
 
 // func main() {
@@ -56,9 +55,9 @@ func GetIpcScreenShot(ffmpegPath string, url string, screenShotPath string, audi
 	params = append(params, "16000")
 	params = append(params, audioPath)
 
-	_, err := CallCommandRun(ffmpegPath, params)
+	_, err := utils.CallCommandRun(ffmpegPath, params)
 	if err != nil {
-		global.Log.Errorln("获取截图出错，url为--->", url, err)
+		utils.Log.Errorln("获取截图出错，url为--->", url, err)
 		return err
 	}
 	return nil
@@ -77,7 +76,7 @@ func GetVideoDuration(url string) int {
 	// out, err := CallCommandRun(cmdName, params)
 	// cmd := exec.Command("ffmpeg", "-v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 ./ffmpeg/video.mp4")
 	// logger.Zap.Debugln("CallCommand Run 执行命令=> ", cmd)
-	out, err := CallCommandRun(cmdName, params)
+	out, err := utils.CallCommandRun(cmdName, params)
 	if err != nil {
 		return 0
 	}
@@ -92,19 +91,4 @@ func resolveTime(seconds int) string {
 	minute := (seconds - day*24*3600 - hour*3600) / 60
 	second := seconds - day*24*3600 - hour*3600 - minute*60
 	return fmt.Sprintf("%02d:%02d:%02d", hour, minute, second)
-}
-
-func CallCommandRun(cmdName string, args []string) (string, error) {
-
-	cmd := exec.Command(cmdName, args...)
-	global.Log.Infoln("CallCommand Run 参数=> ", args)
-	global.Log.Infoln("CallCommand Run 执行命令=> ", cmd)
-	bytes, err := cmd.Output()
-	if err != nil {
-		global.Log.Errorln("CallCommand Run 出错了.....", string(bytes), err.Error())
-		return "", err
-	}
-	resp := string(bytes)
-	global.Log.Infoln("CallCommand Run 调用完成=> ", resp)
-	return resp, nil
 }

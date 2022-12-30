@@ -2,11 +2,47 @@ package utils
 
 import (
 	"bytes"
+	"encoding/base64"
+	"image"
+	_ "image/gif"
+	_ "image/jpeg"
+	"image/png"
+	_ "image/png"
+	"log"
 	"os"
+	"strings"
 
+	"github.com/404name/termui-demo/resource"
 	"github.com/hajimehoshi/go-mp3"
 	"github.com/hajimehoshi/oto/v2"
 )
+
+func CovertImg(base64Img string) image.Image {
+	image, _, err := image.Decode(base64.NewDecoder(base64.StdEncoding, strings.NewReader(base64Img)))
+	if err != nil {
+		log.Fatalf("failed to decode gopher image: %v", err)
+		return nil
+	}
+	return image
+}
+
+// 读取不到默认返回LOGO
+func LoadImg(path string) image.Image {
+	f, err := os.Open(path)
+	if err != nil {
+		Log.Errorln(err.Error())
+		return CovertImg(resource.LOGO)
+	}
+	// decode图片
+	m, err := png.Decode(f)
+	if err != nil {
+
+		Log.Errorln(err.Error())
+		return CovertImg(resource.LOGO)
+
+	}
+	return m
+}
 
 func LoadAudio(path string) oto.Player {
 	fileBytes, err := os.ReadFile(path)

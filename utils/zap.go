@@ -1,4 +1,4 @@
-package global
+package utils
 
 import (
 	"github.com/404name/termui-demo/resource"
@@ -6,6 +6,8 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
+
+var Log *zap.SugaredLogger
 
 func InitLogger() {
 

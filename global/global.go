@@ -5,12 +5,6 @@ import (
 
 	ui "github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
-	"go.uber.org/zap"
-)
-
-// 系统服务
-var (
-	Log *zap.SugaredLogger
 )
 
 // UI组件
