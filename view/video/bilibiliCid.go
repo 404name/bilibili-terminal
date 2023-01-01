@@ -17,7 +17,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/404name/termui-demo/utils"
+	"github.com/404name/termui-demo/global"
 )
 
 var qnMap = map[string]struct {
@@ -85,7 +85,7 @@ func init() {
 // 		log.Fatalf("invalid bvid\n")
 // 	}
 
-// 	utils.Log.Errorf("%v@%v\n", bvid, qn)
+// 	global.LOG.Errorf("%v@%v\n", bvid, qn)
 
 // 	videos := getCidList(bvid, qn)
 // 	for i, v := range videos {
@@ -99,10 +99,11 @@ type downloader struct {
 	io.ReadCloser
 	Total   int64
 	Current int64
+	v       *VideoDetail
 }
 
 func (d *downloader) Read(p []byte) (n int, err error) {
-	if Player.Ready {
+	if d.v.Ready {
 		d.ReadCloser.Close()
 		return
 	}
@@ -113,29 +114,29 @@ func (d *downloader) Read(p []byte) (n int, err error) {
 	nowPos := d.Current * 100 / d.Total
 
 	// 每2%进度刷新一下，共刷新50次
-	if (nowPos > prePos || d.Current == d.Total) && !Player.Ready {
+	if (nowPos > prePos || d.Current == d.Total) && !d.v.Ready {
 		prePos = nowPos
-		VideoDownloadBarRender(int(d.Current), int(d.Total))
+		d.v.VideoDownloadBarRender(int(d.Current), int(d.Total))
 	}
 
 	if d.Current == d.Total {
-		utils.Log.Errorln("关闭Reader")
+		global.LOG.Errorln("关闭Reader")
 		d.ReadCloser.Close()
 	}
 	return
 }
 
-func (c *bilibiliCid) download(dir string) {
+func (v *VideoDetail) download(dir string) {
 	prePos = 0
-	for i, URL := range c.PlayURLs {
+	for i, URL := range v.PlayURLs {
 		u, err := url.Parse(URL)
 		if err != nil {
-			utils.Log.Errorf("ERR: %v", err)
+			global.LOG.Errorf("ERR: %v", err)
 			continue
 		}
 
-		name := fmt.Sprintf("%v_%v_%v", c.Bvid, c.Title, path.Base(path.Base(u.Path)))
-		utils.Log.Infof("Downloading[%d]: name:%v\n\turl:%v\n", i, name, URL)
+		name := fmt.Sprintf("%v_%v_%v", v.Bvid, v.Title, path.Base(path.Base(u.Path)))
+		global.LOG.Infof("Downloading[%d]: name:%v\n\turl:%v\n", i, name, URL)
 
 		client := &http.Client{}
 		req, err := http.NewRequest("GET", URL, nil)
@@ -160,10 +161,10 @@ func (c *bilibiliCid) download(dir string) {
 		}
 		defer rsp.Body.Close()
 
-		// utils.Log.Errorf("save to: %v", dir)
+		// global.LOG.Errorf("save to: %v", dir)
 		out, err := os.Create(dir)
 		if err != nil {
-			utils.Log.Errorf("err: %v", err)
+			global.LOG.Errorf("err: %v", err)
 			continue
 		}
 		defer out.Close()
@@ -172,15 +173,16 @@ func (c *bilibiliCid) download(dir string) {
 			rsp.Body,
 			rsp.ContentLength,
 			0,
+			v,
 		}
 		io.Copy(out, dr)
-		utils.Log.Infof("视频下载完成")
+		global.LOG.Infof("视频下载完成")
 	}
 }
 
 func (c *bilibiliCid) getPlayURLs() {
 	url := fmt.Sprintf("https://api.bilibili.com/x/player/playurl?bvid=%v&cid=%v&qn=%v&fourk=1", c.Bvid, c.Cid, c.QN)
-	// utils.Log.Infoln(url)
+	// global.LOG.Infoln(url)
 
 	pl := struct {
 		Code    int    `json:"code"`
@@ -200,7 +202,7 @@ func (c *bilibiliCid) getPlayURLs() {
 	json.Unmarshal([]byte(data), &pl)
 
 	for i, p := range pl.Data.Durl {
-		utils.Log.Infof("PlayList[%d]: quality %v order %v url %v %v", i, pl.Data.Quality, p.Order, p.URL, p.BackupURL)
+		global.LOG.Infof("PlayList[%d]: quality %v order %v url %v %v", i, pl.Data.Quality, p.Order, p.URL, p.BackupURL)
 		c.PlayURLs = append(c.PlayURLs, p.URL)
 	}
 }
@@ -228,7 +230,7 @@ func getCidList(bvid string, qn int) []bilibiliCid {
 	json.Unmarshal([]byte(data), &cl)
 
 	if len(cl.Data) == 0 {
-		utils.Log.Errorf("ERR: get cid list failed")
+		global.LOG.Errorf("ERR: get cid list failed")
 	}
 
 	var cids []bilibiliCid
@@ -240,7 +242,7 @@ func getCidList(bvid string, qn int) []bilibiliCid {
 		c.QN = qn
 		c.getPlayURLs()
 		cids = append(cids, c)
-		utils.Log.Infof("CidList[%d]: %v %v %v %v", i, d.Cid, d.Part, d.Dimension.Width, d.Dimension.Height)
+		global.LOG.Infof("CidList[%d]: %v %v %v %v", i, d.Cid, d.Part, d.Dimension.Width, d.Dimension.Height)
 	}
 
 	return cids
@@ -251,7 +253,7 @@ func setUserAgent(req *http.Request) {
 }
 func setCookie(req *http.Request) {
 	cookie := http.Cookie{Name: "SESSDATA", Value: sessionData, Expires: time.Now().Add(30 * 24 * 60 * 60 * time.Second)}
-	utils.Log.Infof("got bilibili cookie, SESSDATA:%v", sessionData)
+	global.LOG.Infof("got bilibili cookie, SESSDATA:%v", sessionData)
 	req.AddCookie(&cookie)
 }
 
@@ -282,7 +284,7 @@ func rawGetURL(url string, headerSet func(*http.Request)) (s string) {
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		utils.Log.Errorf("http return %v\n", res.StatusCode)
+		global.LOG.Errorf("http return %v\n", res.StatusCode)
 		return
 	}
 

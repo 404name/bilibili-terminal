@@ -13,10 +13,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/404name/termui-demo/core"
 	"github.com/404name/termui-demo/global"
-	"github.com/404name/termui-demo/model/video"
-	"github.com/404name/termui-demo/resource"
 	"github.com/404name/termui-demo/utils"
+	"github.com/404name/termui-demo/view"
 	ui "github.com/gizak/termui/v3"
 )
 
@@ -30,11 +30,9 @@ func main() {
 
 	// 初始化模型
 
-	defer utils.Log.Sync()
+	defer global.LOG.Sync()
 
 	// 开始渲染
-	ui.Clear()
-	ui.Render(global.Grid)
 
 	uiEvents := ui.PollEvents()
 	ticker := time.NewTicker(time.Second).C
@@ -46,39 +44,14 @@ func main() {
 
 			case "q", "<C-c>":
 				return
-			case "<Space>", "Enter":
-				if video.Player.Ready {
-					var playControl interface{}
-					video.Player.PlayChan <- playControl
-				}
-
-			case "<Left>":
-				global.Tab.FocusLeft()
-				global.RefreshGrid()
-				ui.Render(global.Grid)
-			case "<Right>":
-				global.Tab.FocusRight()
-				global.RefreshGrid()
-				// global.CurTabView = global.TabView[global.Tab.ActiveTabIndex]
-				// println(global.CurTabView)
-				ui.Render(global.Grid)
 			case "<Resize>":
-				global.RefreshGrid()
-				ui.Render(global.Grid)
+				view.NowPage.Refresh()
+			default:
+				view.NowPage.EventHander(e)
 			}
 		case <-ticker:
-
-			// if tickerCount == 1000 {
-			// 	return
-			// }
-
-			global.Gauges[2].Percent = (global.Gauges[2].Percent + 3) % 100
-
-			// // global.SparklineGroup.Sparklines[0].Data = utils.SinFloat64[tickerCount : tickerCount+100]
-			// // global.Plot.Data[0] = utils.SinFloat64[2*tickerCount:]
-			ui.Render(global.Gauges[2])
-			// // ui.Render(global.SparklineGroup)
-			// // ui.Render(global.Plot)
+			view.NowPage.(*view.VideoPage).Gauge.Percent = (view.NowPage.(*view.VideoPage).Gauge.Percent + 3) % 100
+			ui.Render(view.NowPage.(*view.VideoPage).Gauge)
 			// tickerCount++
 		}
 	}
@@ -88,22 +61,26 @@ func main() {
 func Init() {
 	// 先初始化日志和系统服务
 	initService()
-	global.InitUI()
-	global.RefreshGrid()
-	video.Init()
+	view.InitUI()
+	// video.Init()
 }
 
 func initService() {
-	utils.InitLogger()
+	// 读取本地配置优先
+	global.VIPER = core.Viper()
+	global.LOG = core.Zap()
+	global.LOG.Infoln("读取本地配置====》", global.CONFIG)
+	global.PATH = utils.GetCurrentDirectory()
+	global.LOG.Infoln("运行路径====》", global.PATH)
 	// 初始化系统及设置命令行UTF-8格式
 	initOS()
 }
 
 func initOS() {
 	// 创建ffmpeg输出图片和音频的文件夹防止ffmpeg生成时候报错
-	os.MkdirAll(resource.OutputAudioPath[:strings.LastIndex(resource.OutputAudioPath, "/")], os.ModePerm)
-	os.MkdirAll(resource.OutputImgPath[:strings.LastIndex(resource.OutputImgPath, "/")], os.ModePerm)
-	os.MkdirAll(resource.OutputVideoPath[:strings.LastIndex(resource.OutputVideoPath, "/")], os.ModePerm)
+	os.MkdirAll(global.CONFIG.Output.OutputAudioPath[:strings.LastIndex(global.CONFIG.Output.OutputAudioPath, "/")], os.ModePerm)
+	os.MkdirAll(global.CONFIG.Output.OutputImgPath[:strings.LastIndex(global.CONFIG.Output.OutputImgPath, "/")], os.ModePerm)
+	os.MkdirAll(global.CONFIG.Output.OutputVideoPath[:strings.LastIndex(global.CONFIG.Output.OutputVideoPath, "/")], os.ModePerm)
 
 	// 添加UTF-8来支持中文
 	utils.CallCommandRun("chcp", []string{"65001"})

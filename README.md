@@ -1,6 +1,6 @@
 # BiliBili-Terminal
 
-![](https://404name.oss-cn-shanghai.aliyuncs.com/project/bilibili.gif)
+![](./resource/doc/bilibili.gif)
 
 > 本项目长期维护~目前仅开发分支
 > 
@@ -11,8 +11,11 @@
 ## ChangeLog
 > **feat** 新功能、**fix** 修补 bug、**docs** 文档、**style** 格式、**refactor** 重构、**test** 增加测试、**chore** 构建过程、辅助工具、**perf** 提高性能
 
+> 后面预期【0.0.6 配置和日志】、【0.0.7 首页布局制作】、【0.0.8 封装视频组件】
+
 | Date      | Versiton | Describe |Changelog                                  |
 | --------- | -------- | -------- |------------------------------------------ |
+| 2023.01.01 | v0.0.6   | viper读取配置、封装页面组件~ |  🚀 **[feat]** 【viper读取配置】/【log日志输出到窗口组件】/【封装page组件更为优雅】 |
 | 2022.12.29 | v0.0.5   | 支持中文！修复部分bug~ |  🚀 **[fix]** 【修复中文显示】/【修复结束不能重新播放】 |
 | 2022.12.29 | v0.0.4   | 支持bv解析了~ |  🚀 **[feat]** 【bv解析播放！】/【加载进度条】 |
 | 2022.12.29 | v0.0.3   | 支持音频了~ |  ☀️ **[perf]** 优化播放逻辑 <br/>💬 **[fix]** 修复线上问题及添加gitignore  <br/>🚀 **[feat]** 【支持音频播放！】/【同步拉取图片及音频】/ 【初步实现音视频同步播放】   |
@@ -21,14 +24,15 @@
 
 
 
-## Features`V0.0.4`
+## Features`V0.0.6`
 > **系统进度** `[==>20%------------------------]` 
 > **设计进度** `[========>35%------------------]` 
 
 * [x] 命令行播放视频
 * [x] 音频播放
 * [x] 直接解析bv `go run main.go -b BV1xx411c79H` 
-* [ ] 完成组件构建
+* [x] 完成组件构建
+* [x] viper读取本地配置
 * [ ] 日志收集器
 * [ ] 弹幕解析 
 * [ ] ...
@@ -48,6 +52,79 @@ $ go run main.go
 # 打包
 $ go build main.go
 ```
+## 架构逻辑
+
+```
+├───core          服务组件(viper、zap)
+├───ffmpeg        视频抽帧音频分离逻辑
+├───global        全局变量或者服务
+├───output        输出内容
+│   ├───audio         分割的音频
+│   ├───img           分割的图片
+│   └───video         处理的视频
+├───resource      资源目录
+│   ├───images        本地图片(封面，视频暂停ui等)
+│   └───doc           readme里面的图片
+├───utils         工具
+└───view          页面视图
+└───main.go       主程序
+└───config.yaml   配置文件
+
+```
+1. 主程序负责启动项目
+```
+// 初始化页面逻辑
+Init()
+
+// 开始渲染
+for {
+  select {
+  // 判断事件，然后系统事件这里处理
+  case e := <-ui.PollEvents():
+    //println(e.ID)
+    switch e.ID {
+    case "q", "<C-c>":
+      return
+    // 页面事件交给页面处理
+    case "<Resize>":
+      view.NowPage.Refresh()
+    default:
+      view.NowPage.EventHander(e)
+  }
+}
+
+```
+
+2. 页面组件封装
+> 抽象页面组件，不同的页面只要实现【刷新】【关闭】【事件处理器】就可以了，main程序会负责分发
+
+```
+type Page interface {
+	Refresh()
+	Close()
+	EventHander(e termui.Event)
+}
+```
+
+3. 视频page举例子
+> 视频页面封装了 termui的组件和视频内容通用熟悉，以及b站视频相关
+
+```
+type VideoPage struct {
+	video.VideoDetail
+	Gauge      *widgets.Gauge
+	List       *widgets.List
+	Tab        *widgets.TabPane
+	TabView    []interface{}
+	Grid       *ui.Grid
+	CurTabView interface{}
+}
+```
+- VideoDetail包括Img组件和进度条组件，同时提供如下方法
+  - Init() : 初始化
+  - DownLoad(): 解析bv号拿到下载链接并下载或者在线预览
+  - Load()：根据currentPos当前进度获取preload设定的缓存秒数后面的内容
+- VideoPage会启动一个视频播放线程，同时自己本身会响应主线程发来的事件
 
 ##  TODO
 
@@ -81,21 +158,7 @@ $ go build main.go
 * [ ] P2:音频转换卡顿
 * [ ] P3:go 线程管理不到位，小概率卡死
 * [ ] ...
-##  PATH
 
-```
-├─ffmpeg        存放视频处理相关的逻辑
-├─global        存放全局变量
-├─model         存放对象
-├─resource      存储资源(视频,图片,日志)
-│  ├─images
-│  └─output
-├─test          测试目录
-│  └─keyboard
-├─utils         工具
-└─widget        UI刷新相关
-
-```
 
 
 ## Dependence

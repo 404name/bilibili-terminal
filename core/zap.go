@@ -1,15 +1,15 @@
-package utils
+package core
 
 import (
-	"github.com/404name/termui-demo/resource"
+	"github.com/404name/termui-demo/global"
 	"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-var Log *zap.SugaredLogger
+// var Log *zap.SugaredLogger
 
-func InitLogger() {
+func Zap() *zap.SugaredLogger {
 
 	writeSyncer := getLogWriter()
 
@@ -19,7 +19,7 @@ func InitLogger() {
 
 	logger := zap.New(core, zap.AddCaller())
 
-	Log = logger.Sugar()
+	return logger.Sugar()
 }
 
 func getEncoder() zapcore.Encoder {
@@ -38,7 +38,7 @@ func getLogWriter() zapcore.WriteSyncer {
 
 	lumberJackLogger := &lumberjack.Logger{
 
-		Filename: resource.BaseLogPath,
+		Filename: global.CONFIG.Output.OutputLogPath,
 
 		MaxSize: 1,
 

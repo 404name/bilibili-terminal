@@ -2,6 +2,8 @@ package utils
 
 import (
 	"fmt"
+
+	"github.com/404name/termui-demo/global"
 )
 
 // 将时间格式化为 00:01 / 03:03
@@ -21,3 +23,12 @@ func VideoDurationFormat(seconds int, hourFix bool) string {
 // 	r := regexp.MustCompile(`([\p{Han}])`)
 // 	return r.ReplaceAllString(str, "$1 ")
 // }
+
+func VersionMessage() string {
+	return fmt.Sprintf(`
+	欢迎使用 哔哩哔哩 for cmd
+	当前版本:%s
+		项目地址: https://github.com/404name/bilibili-terminal
+		项目视频: https://www.bilibili.com/video/BV1844y1d7Eg
+`, global.VERSION)
+}
