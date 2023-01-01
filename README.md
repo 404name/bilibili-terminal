@@ -5,11 +5,14 @@
 > 本项目长期维护~目前仅开发分支
 > 
 > 等待V 1.x.x版本应该才是可以使用的
+>
 
 
 
 ## ChangeLog
 > **feat** 新功能、**fix** 修补 bug、**docs** 文档、**style** 格式、**refactor** 重构、**test** 增加测试、**chore** 构建过程、辅助工具、**perf** 提高性能
+>
+> - [v.0.0.5版本b站视频演示](https://www.bilibili.com/video/BV1844y1d7Eg/?spm_id_from=333.999.0.0)
 
 | Date      | Versiton | Describe |Changelog                                  |
 | --------- | -------- | -------- |------------------------------------------ |
