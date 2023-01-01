@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/404name/termui-demo/global"
 	"github.com/404name/termui-demo/utils"
 )
 
@@ -57,7 +58,7 @@ func GetIpcScreenShot(ffmpegPath string, url string, screenShotPath string, audi
 
 	_, err := utils.CallCommandRun(ffmpegPath, params)
 	if err != nil {
-		utils.Log.Errorln("获取截图出错，url为--->", url, err)
+		global.LOG.Errorln("获取截图出错，url为--->", url, err)
 		return err
 	}
 	return nil

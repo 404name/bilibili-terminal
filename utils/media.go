@@ -12,6 +12,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/404name/termui-demo/global"
 	"github.com/404name/termui-demo/resource"
 	"github.com/hajimehoshi/go-mp3"
 	"github.com/hajimehoshi/oto/v2"
@@ -30,14 +31,14 @@ func CovertImg(base64Img string) image.Image {
 func LoadImg(path string) image.Image {
 	f, err := os.Open(path)
 	if err != nil {
-		Log.Errorln(err.Error())
+		global.LOG.Errorln(err.Error())
 		return CovertImg(resource.LOGO)
 	}
 	// decode图片
 	m, err := png.Decode(f)
 	if err != nil {
 
-		Log.Errorln(err.Error())
+		global.LOG.Errorln(err.Error())
 		return CovertImg(resource.LOGO)
 
 	}

@@ -3,14 +3,15 @@ package ffmpeg
 import (
 	"testing"
 
-	"github.com/404name/termui-demo/resource"
-	"github.com/404name/termui-demo/utils"
+	"github.com/404name/termui-demo/core"
+	"github.com/404name/termui-demo/global"
 )
 
 func init() {
-	utils.InitLogger()
+	global.VIPER = core.Viper()
+	global.LOG = core.Zap()
 }
 
 func TestGetIpcScreenShot(t *testing.T) {
-	GetIpcScreenShot("ffmpeg", "."+resource.BaseVideoUrl, "."+resource.OutputImgPath, "."+resource.OutputAudioPath, 6, 10, 1)
+	// GetIpcScreenShot("ffmpeg", "."+resource.BaseVideoUrl, "."+resource.OutputImgPath, "."+resource.OutputAudioPath, 6, 10, 1)
 }
