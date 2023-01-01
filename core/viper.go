@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/404name/termui-demo/global"
+	c "github.com/404name/termui-demo/global/config"
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 )
@@ -41,7 +42,10 @@ func Viper(path ...string) *viper.Viper {
 	v.SetConfigType("yaml")
 	err := v.ReadInConfig()
 	if err != nil {
-		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+		fmt.Errorf("Fatal error config file: %s \n", err)
+		// 取用默认配置
+		global.CONFIG = c.NewDefaultConfig()
+		return nil
 	}
 	v.WatchConfig()
 

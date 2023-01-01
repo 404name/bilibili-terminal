@@ -14,7 +14,7 @@
 >
 > - [v.0.0.5版本b站视频演示](https://www.bilibili.com/video/BV1844y1d7Eg/?spm_id_from=333.999.0.0)
 
-> 后面预期【0.0.6 配置和日志】、【0.0.7 首页布局制作】、【0.0.8 封装视频组件】
+> 后面预期【0.0.6 配置和日志】、【0.0.7 首页布局制作&音频同步视频】、【0.0.8 封装视频组件】
 
 | Date      | Versiton | Describe |Changelog                                  |
 | --------- | -------- | -------- |------------------------------------------ |
@@ -175,6 +175,12 @@ type VideoPage struct {
 ---
 - https://github.com/iawia002/lux 参考项目
 - https://www.zhaoyanbai.com/articles/BilibiliGolangDownloader Go哔哩哔哩下载器
+
+## 备注
+
+- 后期把resource里面被项目引用的图片都转成base64存放
+  - 目前策略是读取不到resource就读取默认本地base64
+  - resource文件夹不会被打包的exe携带，最好用base64存放icon
 
 ## License
 
