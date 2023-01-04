@@ -63,6 +63,7 @@ func VideoProgressBarRender(v *VideoDetail) {
 
 // 这里应该放到外面去
 func (v *VideoDetail) VideoRender() {
+PlayVideo:
 	for {
 		select {
 		case <-v.PlayChan:
@@ -145,6 +146,17 @@ func (v *VideoDetail) VideoRender() {
 				}
 			}
 
+		case <-v.CloseChan:
+			v.Img.Image = nil
+			ui.Render(v.Img)
+			// 初始化播放资源
+			v.Ready = false
+			v.CurrentPos = 0
+			v.PreLoadPos = 0
+			v.FrameLeft = VideoFrameRate
+			v.bilibiliCid = bilibiliCid{}
+			ui.Clear()
+			break PlayVideo
 		}
 	}
 }

@@ -18,6 +18,7 @@ import (
 	"github.com/404name/termui-demo/utils"
 	"github.com/404name/termui-demo/view"
 	ui "github.com/gizak/termui/v3"
+	"github.com/go-resty/resty/v2"
 )
 
 func main() {
@@ -35,24 +36,35 @@ func main() {
 	// 开始渲染
 
 	uiEvents := ui.PollEvents()
-	ticker := time.NewTicker(time.Second).C
+	// ticker := time.NewTicker(time.Second).C
 	for {
 		select {
 		case e := <-uiEvents:
 			//println(e.ID)
 			switch e.ID {
 
-			case "q", "<C-c>":
+			case "<C-c>":
 				return
 			case "<Resize>":
-				view.NowPage.Refresh()
+				view.BiliUI.Refresh()
+			case "q":
+				{
+					global.Command <- utils.CommondNavigateBack()
+				}
 			default:
-				view.NowPage.EventHander(e)
+				view.BiliUI.EventHander(e)
 			}
-		case <-ticker:
-			view.NowPage.(*view.VideoPage).Gauge.Percent = (view.NowPage.(*view.VideoPage).Gauge.Percent + 3) % 100
-			ui.Render(view.NowPage.(*view.VideoPage).Gauge)
-			// tickerCount++
+		case cmd := <-global.Command:
+			global.LOG.Infof("处理命令====>%s", cmd)
+			// 预期用[type:action:param]组合区分指令
+			s := strings.Split(cmd, ":")
+			cmdType, cmdAction, param := s[0], s[1], s[2]
+			switch cmdType {
+			case "NavigateTo":
+				view.BiliUI.NavigateTo(cmdAction, param)
+			case "NavigateBack":
+				view.BiliUI.NavigateBack()
+			}
 		}
 	}
 }
@@ -61,7 +73,7 @@ func main() {
 func Init() {
 	// 先初始化日志和系统服务
 	initService()
-	view.InitUI()
+	view.Init()
 	// video.Init()
 }
 
@@ -71,6 +83,8 @@ func initService() {
 	global.LOG = core.Zap()
 	global.LOG.Infoln("读取本地配置====》", global.CONFIG)
 	global.PATH = utils.GetCurrentDirectory()
+	global.Request = resty.New().SetTimeout(time.Second * 10).SetLogger(global.LOG)
+	global.Command = make(chan string, 10)
 	global.LOG.Infoln("运行路径====》", global.PATH)
 	// 初始化系统及设置命令行UTF-8格式
 	initOS()
