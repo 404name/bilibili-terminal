@@ -35,6 +35,7 @@ type VideoDetail struct {
 	AudioCache chan oto.Player  // 截取的音频缓存器
 	Audio      oto.Player
 	PlayChan   chan interface{} // 让视频播放和暂停
+	CloseChan  chan interface{} // 退出视频
 }
 
 func (v *VideoDetail) Init() error {
@@ -42,18 +43,19 @@ func (v *VideoDetail) Init() error {
 		// 这里也可以读取网络视频。把url改成网络的即可，前提是公开访问
 		v.URL = global.CONFIG.Output.OutputVideoPath
 	}
-
+	v.Img.Image = utils.LoadImg(global.CONFIG.BasePath.VideoCoverImg)
 	v.Ready = false
 	v.CurrentPos = 0
 	v.PreLoadPos = v.CurrentPos
 	v.FrameCache = make(chan image.Image, VideoPreLoadGap*VideoFrameRate)
 	v.AudioCache = make(chan oto.Player, 1)
 	v.PlayChan = make(chan interface{}, 1)
+	v.CloseChan = make(chan interface{}, 1)
 
 	v.FrameLeft = VideoFrameRate
 
 	// 加载视频
-	videos := getCidList(bvid, qn)
+	videos := getCidList(v.Bvid, qn)
 	v.bilibiliCid = videos[0]
 	// 暂时只读取第一个视频
 	v.bilibiliCid.PlayURLs = v.bilibiliCid.PlayURLs[:1]

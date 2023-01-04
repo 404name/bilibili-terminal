@@ -1,28 +1,30 @@
-package view
+package video
 
 import (
 	"github.com/404name/termui-demo/global"
 	"github.com/404name/termui-demo/utils"
-	"github.com/404name/termui-demo/view/video"
+
 	ui "github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
 )
 
 type VideoPage struct {
-	video.VideoDetail
-	Gauge      *widgets.Gauge
-	List       *widgets.List
-	P1         *widgets.Paragraph
-	P2         *widgets.Paragraph
-	Tab        *widgets.TabPane
-	TabView    []interface{}
-	Grid       *ui.Grid
+	VideoDetail
+	Gauge   *widgets.Gauge
+	List    *widgets.List
+	P1      *widgets.Paragraph
+	P2      *widgets.Paragraph
+	Tab     *widgets.TabPane
+	TabView []interface{}
+
 	CurTabView interface{}
+	Layout     *ui.Grid
 }
 
-func NewVideoPage() *VideoPage {
-	v := &VideoPage{}
+func NewPage(layout *ui.Grid) *VideoPage {
 
+	v := &VideoPage{}
+	v.Layout = layout
 	// 进度条
 	v.ProgressBar = widgets.NewGauge()
 	v.ProgressBar.BarColor = ui.ColorBlue
@@ -80,12 +82,15 @@ func NewVideoPage() *VideoPage {
 	v.Tab = widgets.NewTabPane("首页", "视频", "动态", "我的")
 	v.Tab.Border = true
 	v.TabView = []interface{}{v.Img, v.List, v.List, v.P1}
-	v.Grid = ui.NewGrid()
-
-	// 初始化视频下载或者渲染
-	v.VideoDetail.Init()
 	return v
 }
+
+func (v *VideoPage) Load() error {
+	// 初始化加载
+	// 初始化视频下载或者渲染
+	return v.VideoDetail.Init()
+}
+
 func (v *VideoPage) IsReady() bool {
 	return v.Ready
 }
@@ -108,19 +113,22 @@ func (v *VideoPage) EventHander(e ui.Event) {
 
 func (v *VideoPage) Close() {
 	// 关闭里面在执行的事件
+	if v.Ready {
+		var playControl interface{}
+		v.CloseChan <- playControl
+	}
 }
 func (v *VideoPage) Refresh() {
-
+	ui.Clear()
 	termWidth, termHeight := ui.TerminalDimensions()
-
 	videoHeight := float64(termWidth * 4.0 / 16.0)
 	videoHeightRate := videoHeight / float64(termHeight)
 	// global.LOG.Infoln("系统窗口尺寸==>", termWidth, termHeight)
 	// global.LOG.Infoln("视频窗口尺寸|高比率==>", termWidth, videoHeight, videoHeightRate)
-	v.Grid.SetRect(0, 0, termWidth, termHeight)
+	v.Layout.SetRect(0, 0, termWidth, termHeight)
 	// 后期切换界面
 	v.CurTabView = v.TabView[v.Tab.ActiveTabIndex]
-	v.Grid.Set(
+	v.Layout.Set(
 		ui.NewRow(1.0/10,
 			ui.NewCol(1.0/4, v.List),
 			ui.NewCol(2.0/4, v.Tab),
@@ -138,5 +146,5 @@ func (v *VideoPage) Refresh() {
 		),
 		ui.NewRow(2.0/10, v.Log),
 	)
-	ui.Render(v.Grid)
+	ui.Render(v.Layout)
 }

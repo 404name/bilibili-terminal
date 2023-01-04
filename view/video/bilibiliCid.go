@@ -202,7 +202,7 @@ func (c *bilibiliCid) getPlayURLs() {
 	json.Unmarshal([]byte(data), &pl)
 
 	for i, p := range pl.Data.Durl {
-		global.LOG.Infof("PlayList[%d]: quality %v order %v url %v %v", i, pl.Data.Quality, p.Order, p.URL, p.BackupURL)
+		global.LOG.Infof("PlayList[%d]:%s quality %v order %v \n[url]:%v \n[backupUrl]:%v", i, url, pl.Data.Quality, p.Order, p.URL, p.BackupURL)
 		c.PlayURLs = append(c.PlayURLs, p.URL)
 	}
 }

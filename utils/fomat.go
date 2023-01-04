@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/404name/termui-demo/global"
 )
@@ -28,7 +29,19 @@ func VersionMessage() string {
 	return fmt.Sprintf(`
 	欢迎使用 哔哩哔哩 for cmd
 	当前版本:%s
+		操作方法：键盘上下左右切换、空格点击、回车刷新
 		项目地址: https://github.com/404name/bilibili-terminal
 		项目视频: https://www.bilibili.com/video/BV1844y1d7Eg
 `, global.VERSION)
+}
+
+func CommondNavigateTo(path string, param []string) string {
+	if len(param) == 0 {
+		return fmt.Sprintf("%s:%s: ", "NavigateTo", path)
+	}
+	return fmt.Sprintf("%s:%s:%s&%s", "NavigateTo", path, strings.Join(param, "&"))
+}
+
+func CommondNavigateBack() string {
+	return fmt.Sprintf("%s: : ", "NavigateBack")
 }
