@@ -117,6 +117,7 @@ func (v *VideoPage) Close() {
 		var playControl interface{}
 		v.CloseChan <- playControl
 	}
+	v.cancel()
 }
 func (v *VideoPage) Refresh() {
 	ui.Clear()

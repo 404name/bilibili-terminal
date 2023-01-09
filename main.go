@@ -8,6 +8,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 	"strings"
@@ -97,5 +98,5 @@ func initOS() {
 	os.MkdirAll(global.CONFIG.Output.OutputVideoPath[:strings.LastIndex(global.CONFIG.Output.OutputVideoPath, "/")], os.ModePerm)
 
 	// 添加UTF-8来支持中文
-	utils.CallCommandRun("chcp", []string{"65001"})
+	utils.CallCommandRun(context.Background(), "chcp", []string{"65001"})
 }

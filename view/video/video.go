@@ -1,6 +1,7 @@
 package video
 
 import (
+	"context"
 	"fmt"
 	"image"
 
@@ -36,9 +37,13 @@ type VideoDetail struct {
 	Audio      oto.Player
 	PlayChan   chan interface{} // 让视频播放和暂停
 	CloseChan  chan interface{} // 退出视频
+
+	ctx    context.Context    // ctx本身应该在参数中传递，但这里有些地方不用一直携带很侵入原有的代码
+	cancel context.CancelFunc // 控制退出
 }
 
 func (v *VideoDetail) Init() error {
+	v.ctx, v.cancel = context.WithCancel(context.Background())
 	if v.URL == "" {
 		// 这里也可以读取网络视频。把url改成网络的即可，前提是公开访问
 		v.URL = global.CONFIG.Output.OutputVideoPath
@@ -56,6 +61,7 @@ func (v *VideoDetail) Init() error {
 
 	// 加载视频
 	videos := getCidList(v.Bvid, qn)
+	global.LOG.Infoln(videos)
 	v.bilibiliCid = videos[0]
 	// 暂时只读取第一个视频
 	v.bilibiliCid.PlayURLs = v.bilibiliCid.PlayURLs[:1]
@@ -65,7 +71,7 @@ func (v *VideoDetail) Init() error {
 	//go v.Load(false)
 
 	// 开启渲染
-	go v.VideoRender()
+	go v.VideoRender(v.ctx)
 	return nil
 }
 func (v *VideoDetail) Clear() error {
@@ -105,7 +111,13 @@ func (v *VideoDetail) Load(preload bool) {
 	if !preload {
 		v.Ready = true
 		// 加载时长
-		v.Duration = ffmpeg.GetVideoDuration(v.URL)
+		v.Duration = ffmpeg.GetVideoDuration(v.ctx, v.URL)
+		select {
+		case <-v.ctx.Done():
+			global.LOG.Infoln("ctx中断任务")
+			return
+		default: // 默认退出
+		}
 		v.VideoTitleRender()
 		// 渲染进度条
 		VideoProgressBarRender(v)
@@ -125,9 +137,10 @@ func (v *VideoDetail) Load(preload bool) {
 	}
 
 	// 比如5秒加载一次,当前是第3秒,并且规定提前两秒去加载
-	if err := ffmpeg.GetIpcScreenShot("ffmpeg", v.URL, global.CONFIG.Output.OutputImgPath, global.CONFIG.Output.OutputAudioPath, v.PreLoadPos, VideoFrameRate, toPos); err != nil {
-		v.AddLog(fmt.Sprintf("请求异常====>", err))
-		global.LOG.Errorln("请求异常====>", err)
+	if err := ffmpeg.GetIpcScreenShot(v.ctx, "ffmpeg", v.URL, global.CONFIG.Output.OutputImgPath, global.CONFIG.Output.OutputAudioPath, v.PreLoadPos, VideoFrameRate, toPos); err != nil {
+		v.AddLog(fmt.Sprintf("请求异常====>%v", err))
+		global.LOG.Errorln("请求异常====>%v", err)
+		// 也可能是ctx Done了
 		return
 	}
 

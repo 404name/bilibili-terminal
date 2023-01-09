@@ -1,6 +1,7 @@
 package ffmpeg
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -14,7 +15,7 @@ import (
 // }
 
 // 根据URL调用ffmpeg 获取截图
-func GetIpcScreenShot(ffmpegPath string, url string, screenShotPath string, audioPath string, time int, frameRate int, toPos int) error {
+func GetIpcScreenShot(ctx context.Context, ffmpegPath string, url string, screenShotPath string, audioPath string, time int, frameRate int, toPos int) error {
 	//ffmpeg -timeout 10000000 -i https://404name.oss-cn-shanghai.aliyuncs.com/lightcloud/2022/3/20/3724723_da3-1-16.mp4 -ss 0 -to 60 -r 12 -f  image2 -vcodec png ./resource/output/img%04d.png -vsync vfr -y -vn -ss 0 -to 60 -acodec libmp3lame -ar 16000 output.mp3
 	// 抽帧同时输出音频
 	var params []string
@@ -56,7 +57,7 @@ func GetIpcScreenShot(ffmpegPath string, url string, screenShotPath string, audi
 	params = append(params, "16000")
 	params = append(params, audioPath)
 
-	_, err := utils.CallCommandRun(ffmpegPath, params)
+	_, err := utils.CallCommandRun(ctx, ffmpegPath, params)
 	if err != nil {
 		global.LOG.Errorln("获取截图出错，url为--->", url, err)
 		return err
@@ -64,7 +65,7 @@ func GetIpcScreenShot(ffmpegPath string, url string, screenShotPath string, audi
 	return nil
 }
 
-func GetVideoDuration(url string) int {
+func GetVideoDuration(ctx context.Context, url string) int {
 	var params []string
 	params = append(params, "-v")
 	params = append(params, "error")
@@ -77,7 +78,7 @@ func GetVideoDuration(url string) int {
 	// out, err := CallCommandRun(cmdName, params)
 	// cmd := exec.Command("ffmpeg", "-v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 ./ffmpeg/video.mp4")
 	// logger.Zap.Debugln("CallCommand Run 执行命令=> ", cmd)
-	out, err := utils.CallCommandRun(cmdName, params)
+	out, err := utils.CallCommandRun(ctx, cmdName, params)
 	if err != nil {
 		return 0
 	}

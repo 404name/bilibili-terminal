@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/404name/termui-demo/global"
+	"github.com/404name/termui-demo/utils"
 )
 
 var qnMap = map[string]struct {
@@ -127,6 +128,7 @@ func (d *downloader) Read(p []byte) (n int, err error) {
 }
 
 func (v *VideoDetail) download(dir string) {
+
 	prePos = 0
 	for i, URL := range v.PlayURLs {
 		u, err := url.Parse(URL)
@@ -175,15 +177,19 @@ func (v *VideoDetail) download(dir string) {
 			0,
 			v,
 		}
-		io.Copy(out, dr)
-		global.LOG.Infof("视频下载完成")
+		if err := utils.Copy(v.ctx, out, dr); err != nil { // 携带ctx关闭的copy
+			global.LOG.Infof("====>视频被中断下载")
+		} else {
+			global.LOG.Infof("====>视频下载完成")
+		}
+
 	}
 }
 
 func (c *bilibiliCid) getPlayURLs() {
 	url := fmt.Sprintf("https://api.bilibili.com/x/player/playurl?bvid=%v&cid=%v&qn=%v&fourk=1", c.Bvid, c.Cid, c.QN)
 	// global.LOG.Infoln(url)
-
+	global.LOG.Infof("getPlayUrls===>: %v", url)
 	pl := struct {
 		Code    int    `json:"code"`
 		Message string `json:"message"`
@@ -197,12 +203,13 @@ func (c *bilibiliCid) getPlayURLs() {
 		} `json:"data"`
 	}{}
 
-	data := rawGetURL(url, setCookie)
+	// data := rawGetURL(url, setCookie)
 	// fmt.Println(data)
+	data := rawGetURL(url, nil)
 	json.Unmarshal([]byte(data), &pl)
 
 	for i, p := range pl.Data.Durl {
-		global.LOG.Infof("PlayList[%d]:%s quality %v order %v \n[url]:%v \n[backupUrl]:%v", i, url, pl.Data.Quality, p.Order, p.URL, p.BackupURL)
+		global.LOG.Infof("PlayList[%d]: quality %v order %v url %v %v", i, pl.Data.Quality, p.Order, p.URL, p.BackupURL)
 		c.PlayURLs = append(c.PlayURLs, p.URL)
 	}
 }

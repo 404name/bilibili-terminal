@@ -3,7 +3,6 @@ module github.com/404name/termui-demo
 go 1.19
 
 require (
-	github.com/CuteReimu/bilibili v0.0.0-20221229165412-90408c0f9534
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/gizak/termui/v3 v3.1.0
 	github.com/go-resty/resty/v2 v2.7.0

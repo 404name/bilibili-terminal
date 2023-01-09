@@ -1,6 +1,7 @@
 package video
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -62,7 +63,7 @@ func VideoProgressBarRender(v *VideoDetail) {
 // 视频播放器
 
 // 这里应该放到外面去
-func (v *VideoDetail) VideoRender() {
+func (v *VideoDetail) VideoRender(ctx context.Context) {
 PlayVideo:
 	for {
 		select {
