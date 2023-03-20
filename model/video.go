@@ -58,7 +58,7 @@ type RcmdVideo struct {
 
 func GetRcmdVideo() ([]RcmdVideo, error) {
 	rand.Seed(time.Now().Unix())
-	resp, err := global.Request.SetTimeout(time.Second*10).R().SetHeader("Content-Type", "application/x-www-form-urlencoded").Get(fmt.Sprintf("https://api.bilibili.com/x/web-interface/wbi/index/top/feed/rcmd?feed_version=V4&fresh_idx_1h=1&fetch_row=1&fresh_idx=%d&brush=1&homepage_ver=1&ps=%d", rand.Intn(10000), 10))
+	resp, err := global.Request.SetTimeout(time.Second*10).R().SetHeader("Content-Type", "application/x-www-form-urlencoded").Get(fmt.Sprintf("https://api.bilibili.com/x/web-interface/index/top/feed/rcmd?feed_version=V4&fresh_idx_1h=1&fetch_row=1&fresh_idx=%d&brush=1&homepage_ver=1&ps=%d", rand.Intn(10000), 10))
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
