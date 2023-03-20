@@ -1,15 +1,18 @@
 # BiliBili-Terminal
 
 > **分支[0.1.x](https://github.com/404name/bilibili-terminal/tree/refact_bubbletea_v0.1.0)基于bubbletea全新UI进行重构**，已兼容全平台`windows 需要 chcp 65001编码+nerd+终端完美显示`
-![](https://user-images.githubusercontent.com/56631419/226333547-dfcc0d4e-c204-45d2-9a4c-c5383f601e25.png)
 
- 
-![](./resource/doc/bilibili.gif)
+![](https://user-images.githubusercontent.com/56631419/226333547-dfcc0d4e-c204-45d2-9a4c-c5383f601e25.png)
 
 > 本项目长期维护~目前仅开发分支
 > 
 > 等待V 1.x.x版本应该才是可以使用的
 >
+> 【食用技巧for win】确保开启了unicode字符集`chcp 65001` + 安装了[nerd字体](https://www.nerdfonts.com/#home) + 使用windows terminal终端打开项目(即可完美显示图标内容)
+
+
+![](./resource/doc/bilibili.gif)
+
 
 
 ## ChangeLog
@@ -21,6 +24,7 @@
 
 | Date      | Versiton | Describe |Changelog                                  |
 | --------- | -------- | -------- |------------------------------------------ |
+| 2023.03.20 | v0.1.0   | 基于bubbletea全新UI进行重构~ |  🚀 **[feat]** 【重构框架及UI】/【暂时只支持刷新推荐列表+跳转】<br/> ☀️ **[perf]** 添加action脚本自动构建产物|
 | 2023.01.09 | v0.0.8   | 使用ctx取消任务，优雅退出视频~ |  🚀 **[feat]** 【支持取消下载iocopy任务】/【支持取消cmd指令】 |
 | 2023.01.04 | v0.0.7   | 支持页面跳转、首页视频推荐~ |  🚀 **[feat]** 【首页视频推荐】/【选择视频跳转详细页】/【多了一堆线程bug~】 |
 | 2023.01.01 | v0.0.6   | viper读取配置、封装页面组件~ |  🚀 **[feat]** 【viper读取配置】/【log日志输出到窗口组件】/【封装page组件更为优雅】 |
