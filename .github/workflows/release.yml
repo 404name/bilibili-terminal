@@ -4,9 +4,9 @@ on:
   push:
     tags:
       - 'v*'
-  branches:
-    - bubbletea
-    - refact_bubbletea_v0.1.0
+    branches:
+      - bubbletea
+      - refact_bubbletea_v0.1.0
 
 permissions:
   contents: write
