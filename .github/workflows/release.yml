@@ -1,9 +1,10 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  release:
+    types:
+      - created
+      - edited
     branches:
       - bubbletea
       - refact_bubbletea_v0.1.0
