@@ -3,7 +3,6 @@ package home
 import (
 	"fmt"
 
-	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -16,17 +15,37 @@ func (m Tui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.statusbar.SetSize(msg.Width)
 		m.list.SetSize(msg.Width/2, msg.Height-m.statusbar.Height)
-		resizeImgCmd := m.image.SetSize(msg.Width/2, msg.Width/20*3)
+		resizeImgCmd := m.image.SetSize(msg.Width/2+10, msg.Width/20*3)
 		m.dialog.SetSize(msg.Width/2, msg.Height-m.statusbar.Height-m.image.Viewport.Height)
 
 		return m, tea.Batch(resizeImgCmd, tea.ClearScreen)
 	case DataReadyMsg:
 		data := DataReadyMsg(msg)
-		items := make([]list.Item, len(data))
-		for i, q := range data {
-			items[i] = q
+		list := m.list.Items()
+
+		if len(list) > 0 {
+			list = list[:len(list)-1]
 		}
-		m.list.SetItems(items)
+
+		for _, q := range data {
+			list = append(list, q)
+		}
+		loadMore := RcmdVideo{
+			Headline: "【加载更多】",
+			URI:      "https://www.bilibili.com",
+			Stat: struct {
+				View    int `json:"view"`    // 观看数量
+				Like    int `json:"like"`    // 喜欢数
+				Danmaku int `json:"danmaku"` // 弹幕数量
+			}{
+				View:    0,
+				Like:    0,
+				Danmaku: 0,
+			},
+		}
+		list = append(list, &loadMore)
+
+		m.list.SetItems(list)
 		m.loading = false
 		return m, nil
 	case spinner.TickMsg:
@@ -64,19 +83,29 @@ func (m Tui) updateMainView(msg tea.Msg) (Tui, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "enter":
+		case " ", "enter":
+			// 最后一个是加载更多
+			if m.list.Index() == len(m.list.Items())-1 {
+				m.dialog.SetActive(true)
+				m.dialog.SetQuestionAndCmd("确定要加载更多推荐吗？", LoadMore)
+				return m, nil
+			}
+
+			// 如果是选中的就问是否要打开
+			if m.list.Index() == m.lastSelectIndex {
+				m.dialog.SetActive(true)
+				m.dialog.SetQuestionAndCmd("你要访问【"+m.selected.Headline+"】吗？", open(m.selected.URI))
+				return m, nil
+			}
+			// 第一次选就展示图片
 			if m.list.SelectedItem() != nil {
+				m.lastSelectIndex = m.list.Index()
 				m.selected = (*RcmdVideo)(m.list.SelectedItem().(*RcmdVideo))
 			}
-			m.dialog.SetActive(true)
-			m.dialog.SetQuestionAndCmd("你要访问【"+m.selected.Headline+"】吗？", open(m.selected.URI))
-			return m, nil
-		case " ":
-			// cmd := m.image.SetFileName(fmt.Sprintf("./logo%d.png", m.list.Index()%2))
-			// m.image.SetBorderColor(lipgloss.AdaptiveColor{Dark: "#F25D94", Light: "#F25D94"})
 			return m, m.getRemoteImg(m.list.SelectedItem().(*RcmdVideo).Pic)
 		case "tab":
 			m.list.SetDelegate(rowDelegate{})
+			m.list.SetSize(m.list.Width(), m.list.Height())
 		}
 	case LoadImgMsg:
 		cmd := m.image.SetFileName(string(msg))
@@ -95,7 +124,7 @@ func (m Tui) updateMainView(msg tea.Msg) (Tui, tea.Cmd) {
 	m.statusbar.SetContent(
 		"UP:"+m.list.SelectedItem().(*RcmdVideo).Owner.Name,
 		m.list.SelectedItem().(*RcmdVideo).Headline,
-		fmt.Sprintf("%d/%d", m.list.Index(), len(m.list.Items())),
+		fmt.Sprintf("%d/%d", m.list.Index()+1, len(m.list.Items())),
 		logoText,
 	)
 	return m, nil
@@ -111,7 +140,7 @@ func (m Tui) View() string {
 	} else {
 		return "\n" +
 			lipgloss.JoinVertical(lipgloss.Top,
-				lipgloss.JoinHorizontal(lipgloss.Left,
+				lipgloss.JoinHorizontal(lipgloss.Center,
 					m.list.View(),
 					lipgloss.JoinVertical(lipgloss.Top,
 						m.image.View(),

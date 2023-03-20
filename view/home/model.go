@@ -36,7 +36,7 @@ var (
 
 func (i RcmdVideo) Title() string { return i.Headline }
 func (i RcmdVideo) Description() string {
-	return fmt.Sprintf("🧑%20s 👀%d 👍%d 💬%d", i.Owner.Name, i.Stat.View, i.Stat.Like, i.Stat.Danmaku)
+	return fmt.Sprintf("🧑%s 👀%d 👍%d 💬%d", i.Owner.Name, i.Stat.View, i.Stat.Like, i.Stat.Danmaku)
 }
 func (i *RcmdVideo) FilterValue() string {
 	return i.Headline
@@ -45,15 +45,16 @@ func (i *RcmdVideo) FilterValue() string {
 var HomeView *Tui
 
 type Tui struct {
-	state     ViewState
-	dialog    *components.Dialog
-	statusbar statusbar.Bubble
-	image     image.Bubble
-	spinner   *spinner.Model
-	list      *list.Model
-	selected  *RcmdVideo
-	loading   bool
-	err       error
+	state           ViewState
+	dialog          *components.Dialog
+	statusbar       statusbar.Bubble
+	image           image.Bubble
+	spinner         *spinner.Model
+	list            *list.Model
+	selected        *RcmdVideo
+	loading         bool
+	lastSelectIndex int
+	err             error
 }
 
 // 用bubbletea写的一个终端界面，用来选择搜索结果，然后打开链接
@@ -65,7 +66,7 @@ func NewTuiModel() Tui {
 	// c := list.New(nil, rowDelegate{}, 0, 0)
 	// 用默认的rowDelegate来渲染列表
 	l := list.New(nil, list.NewDefaultDelegate(), 0, 0)
-	l.Title = "🔥百度热搜Trending（回车访问）"
+	l.Title = "🔥哔哩哔哩回车访问）"
 	l.SetShowStatusBar(true)
 	l.SetShowTitle(true)
 	l.Styles.Title = titleStyle
@@ -92,7 +93,7 @@ func NewTuiModel() Tui {
 	)
 	statusbarModel.SetContent(
 		"上下左右移动光标",
-		"esc/q退出",
+		"乱码请输入chcp 65001",
 		"空格选取",
 		"回车确认",
 	)
@@ -101,13 +102,14 @@ func NewTuiModel() Tui {
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 	// TODO Implement a progressive loading list
 	HomeView = &Tui{
-		state:     mainView,
-		dialog:    components.NewDialog("你要访问吗", "是的", "不要"),
-		image:     image.New(false, true, lipgloss.AdaptiveColor{Light: "#000000", Dark: "#ffffff"}),
-		statusbar: statusbarModel,
-		spinner:   &s,
-		list:      &l,
-		loading:   true,
+		lastSelectIndex: -1,
+		state:           mainView,
+		dialog:          components.NewDialog("你要访问吗", "是的", "不要"),
+		image:           image.New(false, true, lipgloss.AdaptiveColor{Light: "#000000", Dark: "#ffffff"}),
+		statusbar:       statusbarModel,
+		spinner:         &s,
+		list:            &l,
+		loading:         true,
 	}
 	return *HomeView
 }
@@ -117,18 +119,11 @@ func (m Tui) Init() tea.Cmd {
 	loading := func() tea.Msg {
 		return spinner.TickMsg{}
 	}
-	init := func() tea.Msg {
-		if data, err := GetTrendingList(); err != nil {
-			return err
-		} else {
-			return DataReadyMsg(data)
-		}
-	}
 	loadImg := func() tea.Msg {
 		return LoadImgMsg("logo1.png")
 	}
 	// 注册加载中的动画和初始化事件
-	return tea.Batch(loading, init, loadImg)
+	return tea.Batch(loading, LoadMore, loadImg)
 }
 
 // 用于渲染列表单个内容的样式

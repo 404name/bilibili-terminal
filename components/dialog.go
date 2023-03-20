@@ -11,7 +11,7 @@ const (
 	defaultHeight          = 7
 	defaultWidth           = 100
 	questionWidth          = 50
-	defaultWhitespaceChars = "诶嘿"
+	defaultWhitespaceChars = "😅"
 )
 
 var (
@@ -111,7 +111,7 @@ func (d *Dialog) Update(msg tea.Msg) (*Dialog, tea.Cmd) {
 func (d Dialog) View() string {
 
 	var okButton, cancelButton string
-	var ui string
+
 	if d.ChooseOK {
 		okButton = activeButtonStyle.Render(d.okButtonDesc)
 		cancelButton = buttonStyle.Render(d.cancelButtonDesc)
@@ -124,15 +124,20 @@ func (d Dialog) View() string {
 	question := lipgloss.NewStyle().Width(d.questionWidth).Align(lipgloss.Center).Render(d.question)
 
 	buttons := lipgloss.JoinHorizontal(lipgloss.Top, okButton, cancelButton)
-
+	ui := lipgloss.JoinVertical(lipgloss.Center, question, buttons)
 	if d.Active {
-		ui = lipgloss.JoinVertical(lipgloss.Center, question, buttons)
+		return lipgloss.Place(d.width, d.height,
+			lipgloss.Center, lipgloss.Center,
+			dialogBoxStyle.Render(ui),
+			lipgloss.WithWhitespaceChars(d.withWhitespaceChars),
+			lipgloss.WithWhitespaceForeground(subtle),
+		) + "\n"
+	} else {
+		return lipgloss.Place(d.width, d.height,
+			lipgloss.Center, lipgloss.Center,
+			"",
+			lipgloss.WithWhitespaceChars(d.withWhitespaceChars),
+			lipgloss.WithWhitespaceForeground(subtle),
+		) + "\n"
 	}
-	dialog := lipgloss.Place(d.width, d.height,
-		lipgloss.Center, lipgloss.Center,
-		dialogBoxStyle.Render(ui),
-		lipgloss.WithWhitespaceChars(d.withWhitespaceChars),
-		lipgloss.WithWhitespaceForeground(subtle),
-	)
-	return dialog + "\n"
 }

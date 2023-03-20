@@ -1,4 +1,5 @@
 # 文件夹
+/cache/*
 /output/*
 /test/*
 

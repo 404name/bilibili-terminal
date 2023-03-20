@@ -15,7 +15,7 @@ import (
 )
 
 // var baseUrl string = `https://api.iwyu.com/API/baiduresou/`
-var baseUrl string = fmt.Sprintf("https://api.bilibili.com/x/web-interface/index/top/feed/rcmd?feed_version=V4&fresh_idx_1h=1&fetch_row=1&fresh_idx=%d&brush=1&homepage_ver=1&ps=%d", rand.Intn(10000), 20)
+var baseUrl string = "https://api.bilibili.com/x/web-interface/index/top/feed/rcmd?feed_version=V4&fresh_idx_1h=1&fetch_row=1&fresh_idx=%d&brush=1&homepage_ver=1&ps=%d"
 
 type Result struct {
 	Code int           `json:"code"`
@@ -109,9 +109,17 @@ func (m *Tui) getRemoteImg(url string) tea.Cmd {
 	}
 }
 
+func LoadMore() tea.Msg {
+	if data, err := GetTrendingList(); err != nil {
+		return err
+	} else {
+		return DataReadyMsg(data)
+	}
+}
+
 func GetTrendingList() ([]*RcmdVideo, error) {
 	// 用http从baseUrl获取搜索结果映射到result
-	resp, err := http.Get(baseUrl)
+	resp, err := http.Get(fmt.Sprintf(baseUrl, rand.Intn(10000), 15))
 	defer resp.Body.Close()
 	// 得到请求的status code
 	if err != nil {
