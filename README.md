@@ -1,12 +1,15 @@
 # BiliBili-Terminal
 
+> **分支[0.1.x](https://github.com/404name/bilibili-terminal/tree/refact_bubbletea_v0.1.0)基于bubbletea全新UI进行重构**，已兼容全平台`windows 需要 chcp 65001编码+nerd+终端完美显示`
+![](https://user-images.githubusercontent.com/56631419/226333547-dfcc0d4e-c204-45d2-9a4c-c5383f601e25.png)
+
+ 
 ![](./resource/doc/bilibili.gif)
 
 > 本项目长期维护~目前仅开发分支
 > 
 > 等待V 1.x.x版本应该才是可以使用的
 >
-
 
 
 ## ChangeLog
