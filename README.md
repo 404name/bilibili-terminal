@@ -1,9 +1,12 @@
-# BiliBili-Terminal
+# BiliBili-Terminal 
 
-![](./resource/doc/bilibili.gif)
+
+![](https://user-images.githubusercontent.com/56631419/226333547-dfcc0d4e-c204-45d2-9a4c-c5383f601e25.png)
 
 > 本项目长期维护~目前仅开发分支
-> 
+>
+> 本**分支0.1.x基于bubbletea进行重构**，已兼容全平台`windows 需要 chcp 65001编码+nerd+终端完美显示` 
+>
 > 等待V 1.x.x版本应该才是可以使用的
 >
 
