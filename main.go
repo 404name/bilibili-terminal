@@ -47,7 +47,7 @@ func main() {
 			case "<C-c>":
 				return
 			case "<Resize>":
-				view.BiliUI.Refresh()
+				go view.BiliUI.Refresh()
 			case "q":
 				{
 					global.Command <- utils.CommondNavigateBack()
